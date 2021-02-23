@@ -1,14 +1,17 @@
 package com.core.httpserver;
 
+import com.alibaba.fastjson.JSONObject;
+import com.core.enums.EnumReturn;
+import com.core.util.MsgUtil;
+import com.core.util.SignUtil;
+import com.core.util.ToolUtil;
 import com.google.common.util.concurrent.RateLimiter;
 import org.apache.http.*;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.nio.DefaultNHttpServerConnection;
 import org.apache.http.nio.entity.NStringEntity;
 import org.apache.http.nio.protocol.BasicAsyncResponseProducer;
 import org.apache.http.nio.protocol.HttpAsyncExchange;
 import org.apache.http.nio.protocol.HttpAsyncRequestConsumer;
-import org.apache.http.nio.protocol.HttpAsyncRequestHandler;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.slf4j.Logger;
@@ -16,15 +19,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Locale;
 
 /**
  * http请求处理handle
  *
  * @author
  */
-public abstract class AbstractHandle implements HttpAsyncRequestHandler<RequestBody> {
-    private static final Logger log = LoggerFactory.getLogger(AbstractHandle.class);
+public abstract class AbstractJsonHandle extends AbstractHandle {
+    private static final Logger log = LoggerFactory.getLogger(AbstractJsonHandle.class);
 
     private static RateLimiter rateLimiter = null;
 
@@ -33,47 +35,30 @@ public abstract class AbstractHandle implements HttpAsyncRequestHandler<RequestB
     private String uri;
 
     @Override
-    @SuppressWarnings("unused")
-    public void handle(RequestBody requestBody, HttpAsyncExchange exchange, HttpContext context)
-            throws HttpException, IOException {
-        DefaultNHttpServerConnection obj = (DefaultNHttpServerConnection) context.getAttribute("http.connection");
-        InetAddress InetAddress = obj.getRemoteAddress();
-        int port = obj.getRemotePort();
-        Header header = requestBody.getRequest().getLastHeader("x-forwarded-for");
-        if (rateLimiter != null) {
-            rateLimiter.acquire();
-        }
-        HttpRequest request = requestBody.getRequest();
-//        Content-Type: application/x-www-form-urlencoded; charset=UTF-8
-        RequestLine requestLine = request.getRequestLine();
-        String methodReq = requestLine.getMethod().toUpperCase(Locale.ENGLISH);
-        if (!methodReq.equals(method)) {
-            //log.warn("****{} receive,request Method={},handler Method={}",request.getRequestLine().getUri(),methodReq,method);
+    public String onHandle(HttpRequest request, String content, HttpContext context) throws IOException, HttpException {
+        JSONObject json = MsgUtil.returnJson(EnumReturn.ERROR);
+
+        //检测是否是json
+        JSONObject dataJson = MsgUtil.checkJson(content);
+        if (dataJson == null) {
+            //当前消息格式异常
+            json = MsgUtil.returnJson(EnumReturn.IS_NOT_JSON);
+            return json.toJSONString();
         }
 
-        String content = requestBody.getContent();
-
-
-        try {
-            if (content != null) {
-                log.info("入站uri {} , receive={}", request.getRequestLine().getUri(), content);
-            }
-
-        } catch (Exception e) {
-
+        boolean checkSign = SignUtil.checkSign(dataJson, "sign", BasicConstent.SIGN_SECRET);
+        if (!checkSign) {
+            //签名异常
+            json = MsgUtil.returnJson(EnumReturn.SIGN_ERROR);
+            return json.toJSONString();
         }
-        String resposeBody = "";
-        try {
-            resposeBody = onHandle(request, content, context);
-            if (content != null) {
-                log.info("出站uri {} , receive={}", request.getRequestLine().getUri(), resposeBody);
-            }
-        } catch (Throwable e) {
-            log.error("handle() content={} e={}", content, e);
-            resposeBody = ErrorConstent.ERROR_UNKNOW;
-        }
-        sendResponse(HttpStatus.SC_OK, resposeBody, exchange);
+//        String data = json.getString("data");
+        String result = onHandle(request, dataJson, context);
+        System.err.println(result);
+
+        return "";
     }
+
 
     @Override
     public HttpAsyncRequestConsumer<RequestBody> processRequest(HttpRequest request, HttpContext context)
@@ -83,7 +68,7 @@ public abstract class AbstractHandle implements HttpAsyncRequestHandler<RequestB
 
     protected abstract String onHandle(
             final HttpRequest request,
-            final String content,
+            final JSONObject o,
             final HttpContext context) throws HttpException, IOException;
 
 

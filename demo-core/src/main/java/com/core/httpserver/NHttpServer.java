@@ -41,7 +41,7 @@ public class NHttpServer {
             try {
                 RequestDisPatch annotation = packetClass.getAnnotation(RequestDisPatch.class);
                 if (annotation != null) {
-                    AbstractHandle handle = (AbstractHandle) packetClass.newInstance();
+                    AbstractJsonHandle handle = (AbstractJsonHandle) packetClass.newInstance();
                     handle.setCheckSign(annotation.isCheckSign());
                     //方法替换
                     handle.setMethod(annotation.method());
