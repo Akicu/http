@@ -45,7 +45,9 @@ public class SignUtil {
             }
         });
         stringBuffer.append("secret=").append(secret);
-
+        System.err.println("加密前打印：" + stringBuffer.toString());
+        String md5Hex = new MD5Util().md5Hex(stringBuffer.toString());
+        System.err.println("加密后打印："+md5Hex);
         return new MD5Util().md5Hex(stringBuffer.toString());
     }
 

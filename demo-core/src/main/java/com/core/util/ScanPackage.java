@@ -36,17 +36,17 @@ public class ScanPackage {
      * @return
      */
     private Set<Class<?>> getClasses(String pack) {
-        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();  // 第一个class类的集合  
+        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();  // 第一个class类的集合
         boolean recursive = true;  // 是否循环迭代  
-        String packageName = pack;  // 获取包的名字 并进行替换  
+        String packageName = pack;  // 获取包的名字 并进行替换
         String packageDirName = packageName.replace('.', '/');
-        Enumeration<URL> dirs;  // 定义一个枚举的集合 并进行循环来处理这个目录下的things  
+        Enumeration<URL> dirs;  // 定义一个枚举的集合 并进行循环来处理这个目录下的things
         try {
             dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
 
             // 循环迭代下去  
             while (dirs.hasMoreElements()) {
-                URL url = dirs.nextElement();  // 获取下一个元素  
+                URL url = dirs.nextElement();  // 获取下一个元素
 
                 String protocol = url.getProtocol();  // 得到协议的名称  
                 if ("file".equals(protocol)) {  // 如果是以文件的形式保存在服务器上  
