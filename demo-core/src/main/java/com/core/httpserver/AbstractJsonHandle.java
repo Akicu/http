@@ -46,13 +46,13 @@ public abstract class AbstractJsonHandle extends AbstractHandle {
             return json.toJSONString();
         }
 
-        boolean checkSign = SignUtil.checkSign(dataJson, "sign", BasicConstent.SIGN_SECRET);
-        if (!checkSign) {
-            //签名异常
-            json = MsgUtil.returnJson(EnumReturn.SIGN_ERROR);
-            return json.toJSONString();
-        }
-//        String data = json.getString("data");
+//        boolean checkSign = SignUtil.checkSign(dataJson, "sign", BasicConstent.SIGN_SECRET);
+//        if (!checkSign) {
+//            //签名异常
+//            json = MsgUtil.returnJson(EnumReturn.SIGN_ERROR);
+//            return json.toJSONString();
+//        }
+
         String result = onHandle(request, dataJson, context);
         System.err.println(result);
 
