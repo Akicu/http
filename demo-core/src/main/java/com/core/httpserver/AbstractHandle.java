@@ -20,7 +20,7 @@ import java.util.Locale;
 
 /**
  * http请求处理handle
- *
+ *基础
  * @author
  */
 public abstract class AbstractHandle implements HttpAsyncRequestHandler<RequestBody> {

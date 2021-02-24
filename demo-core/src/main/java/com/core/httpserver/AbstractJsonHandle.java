@@ -22,6 +22,7 @@ import java.net.InetAddress;
 
 /**
  * http请求处理handle
+ * json格式接收
  *
  * @author
  */

@@ -11,7 +11,7 @@ import java.io.IOException;
 
 /**
  * http请求处理handle
- *
+ *form 表单形式接收
  * @author
  */
 public abstract class AbstractFormHandle extends AbstractHandle {
